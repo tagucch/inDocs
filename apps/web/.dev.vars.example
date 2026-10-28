@@ -1,0 +1,9 @@
+# Google Cloud Console の OAuth 2.0 クライアント ID（ウェブアプリケーション）
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+# ログインを許可する Google アカウントのメール（カンマ区切り）
+ALLOWED_EMAILS=you@example.com
+# セッション Cookie の署名鍵。`openssl rand -base64 48` などで生成する
+SESSION_SECRET=
+# ローカル開発だけで使う。設定すると /auth/dev-login でこのメールとしてログインできる。本番には絶対に置かない
+DEV_LOGIN_EMAIL=

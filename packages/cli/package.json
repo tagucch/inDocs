@@ -1,0 +1,28 @@
+{
+  "name": "@indocs/cli",
+  "private": true,
+  "version": "0.1.0",
+  "description": "inDocs に HTML を登録し、インボックスとやり取りする CLI",
+  "type": "module",
+  "bin": {
+    "indocs": "./dist/indocs.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "dev": "node src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^7.0.0",
+    "vitest": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

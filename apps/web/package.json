@@ -1,0 +1,29 @@
+{
+  "name": "@indocs/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.worker.json --noEmit",
+    "test": "vitest run",
+    "types": "wrangler types",
+    "deploy": "vite build && wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply indocs --local",
+    "db:migrate:remote": "wrangler d1 migrations apply indocs --remote"
+  },
+  "dependencies": {
+    "hono": "^4.13.0",
+    "jose": "^6.2.0",
+    "preact": "^10.29.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.60.0",
+    "typescript": "^7.0.0",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0",
+    "wrangler": "^4.152.0"
+  }
+}

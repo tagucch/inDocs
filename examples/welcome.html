@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>inDocs へようこそ｜使い方の要点</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI",sans-serif;max-width:900px;margin:0 auto;padding:24px 20px 48px;line-height:1.85;color:#1c2540;background:#fff}
+  h1{font-size:24px;margin:0 0 8px;padding-left:14px;border-left:6px solid #0b3d91}
+  .lead{color:#5b6475;margin:0 0 24px}
+  h2{font-size:17px;margin:32px 0 10px;color:#0b3d91}
+  table{border-collapse:collapse;width:100%;font-size:15px}
+  th,td{padding:10px 12px;border-bottom:1px solid #e6eaf3;text-align:left;vertical-align:top}
+  th{background:#0b3d91;color:#fff;font-weight:600}
+  code{background:#eef2fa;padding:2px 6px;border-radius:6px;font-size:13px}
+  .note{background:#fff8e1;border-left:4px solid #f5b400;padding:10px 14px;border-radius:8px;margin:20px 0}
+  svg{max-width:100%;height:auto;display:block;margin:12px auto}
+</style>
+</head>
+<body>
+<h1>inDocs へようこそ</h1>
+<p class="lead">このページは <code>indocs add examples/welcome.html</code> で登録されたサンプルです。PC とスマホの両方で開いて、見え方を確かめてください。</p>
+
+<h2>頼み方</h2>
+<table>
+  <thead><tr><th>やりたいこと</th><th>Claude Code への頼み方</th><th>裏で動くコマンド</th><th>結果</th></tr></thead>
+  <tbody>
+    <tr><td>作った HTML を読めるようにする</td><td>「この HTML を inDocs に共有して」</td><td><code>indocs add &lt;file&gt; --project &lt;案件名&gt;</code></td><td>一覧の案件カードに新しい順で並ぶ</td></tr>
+    <tr><td>外出先で思いついた依頼を置く</td><td>スマホのインボックスに書いて「頼む」</td><td>PC で <code>/inbox</code></td><td>Claude Code が引き取って作業を始める</td></tr>
+    <tr><td>判断をスマホに回す</td><td>「続きはスマホで判断する」(<code>/mobile</code>)</td><td><code>indocs review push / watch</code></td><td>承認かコメントが返るまで待つ</td></tr>
+    <tr><td>一覧から消す</td><td>「〜のページを inDocs から外して」</td><td><code>indocs remove &lt;slug&gt;</code></td><td>一覧と配信から消える</td></tr>
+  </tbody>
+</table>
+<p class="note">スマホ幅ではこの表が縦積みのカードに畳まれます。PC 幅ではそのまま表で表示されます。</p>
+
+<h2>データの流れ</h2>
+<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" aria-label="PC から Worker を経て PC とスマホのブラウザへ届く流れ">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5 0 10z" fill="#0b3d91"/></marker></defs>
+  <rect x="20" y="60" width="180" height="80" rx="12" fill="#eef2fa" stroke="#0b3d91"/>
+  <text x="110" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#0b3d91">手元の PC</text>
+  <text x="110" y="116" text-anchor="middle" font-size="13" fill="#5b6475">Claude Code + indocs CLI</text>
+  <rect x="270" y="60" width="180" height="80" rx="12" fill="#0b3d91"/>
+  <text x="360" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Cloudflare Worker</text>
+  <text x="360" y="116" text-anchor="middle" font-size="13" fill="#c9dcf5">D1 台帳 + R2 本体</text>
+  <rect x="520" y="60" width="180" height="80" rx="12" fill="#eef2fa" stroke="#0b3d91"/>
+  <text x="610" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#0b3d91">PC・スマホ</text>
+  <text x="610" y="116" text-anchor="middle" font-size="13" fill="#5b6475">Google ログイン + PWA</text>
+  <line x1="200" y1="100" x2="268" y2="100" stroke="#0b3d91" stroke-width="2" marker-end="url(#a)"/>
+  <text x="234" y="88" text-anchor="middle" font-size="12" fill="#0b3d91">端末トークン</text>
+  <line x1="450" y1="100" x2="518" y2="100" stroke="#0b3d91" stroke-width="2" marker-end="url(#a)"/>
+  <text x="484" y="88" text-anchor="middle" font-size="12" fill="#0b3d91">sandbox CSP</text>
+  <text x="360" y="180" text-anchor="middle" font-size="12" fill="#5b6475">許可したメールだけがログインでき、配信 HTML は Cookie や API に触れません</text>
+</svg>
+
+<h2>次にやると便利なこと</h2>
+<table>
+  <thead><tr><th>こと</th><th>やり方</th></tr></thead>
+  <tbody>
+    <tr><td>ホーム画面に置く</td><td>iPhone は Safari の共有 →「ホーム画面に追加」。Android は Chrome のメニュー →「アプリをインストール」</td></tr>
+    <tr><td>案件をピン留めする</td><td>カード見出しの押しピンを押すと、ヘッダーのチップで絞り込めるようになります</td></tr>
+    <tr><td>読み終えたら</td><td>開くだけで既読になり、PC とスマホで同期します。右上のメニューから未読に戻せます</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

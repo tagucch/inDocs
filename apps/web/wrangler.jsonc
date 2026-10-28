@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "indocs",
+  "main": "./src/worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/auth/*", "/view/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "indocs",
+      "database_id": "f816a843-5056-4ee6-88b2-42790fdf9c59",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PAGES",
+      "bucket_name": "indocs-pages"
+    }
+  ],
+  "vars": {
+    "APP_NAME": "inDocs"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
