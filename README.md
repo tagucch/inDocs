@@ -30,7 +30,7 @@ Cloudflare Worker "indocs" (Hono)
 手元の PC: Claude Code + indocs CLI + スキル
 ```
 
-詳しくは [docs/design.md](docs/design.md) を参照してください。
+詳しくは [docs/design.md](docs/design.md) を参照してください。全体像を 1 枚で掴むには [docs/catchup.html](docs/catchup.html)（キャッチアップ資料）があります。
 
 ## セットアップ
 

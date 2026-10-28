@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>inDocs キャッチアップ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 1 本の読み物。左に細い目次、右に本文。狭い幅では目次を上に畳む */
+:root {
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --fg: #17223b;
+  --muted: #5d6b85;
+  --line: #dde3ee;
+  --brand: #0b3d91;
+  --brand-2: #1e88e5;
+  --accent: #f5b400;
+  --code-bg: #edf1f9;
+  --th-bg: #0b3d91;
+  --th-fg: #ffffff;
+  --note-bg: #fff6d6;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1526; --surface: #161f33; --fg: #e6ebf5; --muted: #9aa7c0; --line: #2a3650;
+    --brand: #9cc3ff; --brand-2: #64b5f6; --accent: #ffc83d; --code-bg: #1d2944;
+    --th-bg: #24406f; --th-fg: #e6ebf5; --note-bg: #3a3214; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1526; --surface: #161f33; --fg: #e6ebf5; --muted: #9aa7c0; --line: #2a3650;
+  --brand: #9cc3ff; --brand-2: #64b5f6; --accent: #ffc83d; --code-bg: #1d2944;
+  --th-bg: #24406f; --th-fg: #e6ebf5; --note-bg: #3a3214; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.9; -webkit-font-smoothing: antialiased; }
+a { color: var(--brand-2); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+code, pre, kbd { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 6px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 10px 0; }
+pre code { background: none; padding: 0; font-size: 13px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.masthead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 20px; padding-bottom: 20px; border-bottom: 2px solid var(--brand); margin-bottom: 24px; }
+.masthead h1 { margin: 0; font-size: clamp(28px, 4vw, 40px); font-weight: 900; color: var(--brand); letter-spacing: 0.01em; }
+.masthead .sub { color: var(--muted); margin: 0; flex: 1 1 320px; max-width: 60ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); width: 100%; }
+.meta a { color: inherit; }
+.eyebrow { display: inline-block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brand-2); font-weight: 700; }
+.grid { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; align-items: start; }
+nav.toc { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); font-size: 13.5px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
+nav.toc li a { display: block; padding: 5px 0 5px 12px; color: var(--muted); text-decoration: none; margin-left: -2px; border-left: 2px solid transparent; }
+nav.toc li a:hover { color: var(--fg); border-left-color: var(--brand-2); }
+main { min-width: 0; }
+section { margin-bottom: 44px; }
+section h2 { font-size: 22px; margin: 0 0 12px; color: var(--brand); display: flex; align-items: baseline; gap: 10px; }
+section h2 .n { font-family: var(--font-mono); font-size: 13px; color: var(--muted); font-weight: 500; }
+section h3 { font-size: 16.5px; margin: 22px 0 8px; }
+p { margin: 0 0 12px; max-width: 70ch; }
+ul, ol { margin: 0 0 12px; padding-left: 1.4em; max-width: 72ch; }
+li { margin: 2px 0; }
+li::marker { color: var(--brand-2); }
+.lede { font-size: 17px; max-width: 66ch; }
+.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; margin: 0 0 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 24px; }
+.summary div { min-width: 0; }
+.summary b { display: block; color: var(--brand); font-family: var(--font-display); font-size: 14px; margin-bottom: 2px; }
+.summary p { margin: 0; font-size: 14px; color: var(--muted); }
+.table-scroll { overflow-x: auto; margin: 10px 0 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 520px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { background: var(--th-bg); color: var(--th-fg); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.note { background: var(--note-bg); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: 14px; max-width: 72ch; }
+.note b { color: var(--fg); }
+.flow { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin: 0 0 12px; }
+.flow h3 { margin: 0 0 6px; font-size: 15.5px; }
+.flow ol { margin: 0; font-size: 14px; }
+.flows { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.flows .flow { margin: 0; min-width: 0; }
+figure { margin: 12px 0 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; overflow-x: auto; }
+figure svg { display: block; width: 100%; max-width: 100%; height: auto; min-width: 560px; }
+figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+.tag { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; background: var(--code-bg); color: var(--fg); }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 16px; font-size: 14px; margin: 0 0 12px; max-width: 72ch; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.decisions td:first-child { white-space: nowrap; font-weight: 600; }
+@media (max-width: 820px) {
+  .grid { grid-template-columns: 1fr; gap: 16px; }
+  nav.toc { position: static; }
+  nav.toc ol { border-left: 0; display: flex; flex-wrap: wrap; gap: 4px 6px; }
+  nav.toc li a { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; margin: 0; font-size: 12.5px; }
+  body { font-size: 15px; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div>
+    <span class="eyebrow">Catch-up briefing</span>
+    <h1>inDocs キャッチアップ</h1>
+  </div>
+  <p class="sub">AI エージェントに作らせた HTML を 1 か所に集めて、PC とスマホから読むための自分専用サイト。この 1 枚で、目的・構成・データの流れ・運用までを一通り把握できるようにまとめた。</p>
+  <div class="meta">
+    <span>更新 2026-10-28（水）</span>
+    <a href="https://indocs.tagucch.workers.dev" target="_blank" rel="noopener">本番 indocs.tagucch.workers.dev</a>
+    <a href="https://github.com/tagucch/inDocs" target="_blank" rel="noopener">GitHub tagucch/inDocs</a>
+  </div>
+</header>
+
+<div class="summary" aria-label="30 秒の要約">
+  <div><b>何をするもの</b><p>Claude Code などが作った HTML を登録して、案件ごとの一覧から PC・スマホで読む。既読・スター・ピンは端末間で同期する。</p></div>
+  <div><b>どこで動く</b><p>Cloudflare Worker 1 つ（Hono）。管理画面は Preact の PWA、本体は R2、台帳は D1。</p></div>
+  <div><b>誰が入れる</b><p>Google ログイン後、secret の許可メールに載っているアカウントだけ。登録の仕組みはない。</p></div>
+  <div><b>どう登録する</b><p>PC の CLI <code>indocs add file.html</code>。Claude Code のスキルから「共有して」で動く。</p></div>
+</div>
+
+<div class="grid">
+<nav class="toc" aria-label="目次">
+  <ol>
+    <li><a href="#purpose">1. 目的と参考元</a></li>
+    <li><a href="#arch">2. 全体構成</a></li>
+    <li><a href="#concepts">3. 画面と概念</a></li>
+    <li><a href="#flows">4. 4 つの流れ</a></li>
+    <li><a href="#data">5. データモデル</a></li>
+    <li><a href="#api">6. API</a></li>
+    <li><a href="#cli">7. CLI とスキル</a></li>
+    <li><a href="#security">8. セキュリティ設計</a></li>
+    <li><a href="#ops">9. 運用と開発</a></li>
+    <li><a href="#repo">10. リポジトリ地図</a></li>
+    <li><a href="#decisions">11. 決めたこと</a></li>
+    <li><a href="#next">12. 現状と次の一手</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="purpose">
+  <h2><span class="n">01</span>目的と参考元</h2>
+  <p class="lede">AI エージェントに長い報告や調査結果を HTML で書かせると、チャットの中では読みづらく、ファイルは散らばる。inDocs はそれを 1 か所にため、PC でもスマホでも同じ一覧から開けるようにする。</p>
+  <p>発想は御田 稔氏（minorun365）の「HTML共有くん」から借りた。成果物を 1 か所にためる、既読を端末間で同期する、スマホから依頼を置く、という考え方は同じで、実装は AWS ではなく Cloudflare だけで完結するように組み替えている。コードは参考にしたが流用はしていない。</p>
+  <div class="kv">
+    <dt>参考元</dt><dd><a href="https://github.com/minorun365/html-share" target="_blank" rel="noopener">minorun365/html-share</a>（Apache-2.0。S3 + CloudFront + Cognito + DynamoDB 構成）</dd>
+    <dt>要件</dt><dd>Cloudflare だけで動く／PWA として PC・スマホのホーム画面に置ける／指定した Google アカウントだけがログインできる</dd>
+    <dt>初期スコープ</dt><dd>一覧・既読同期・スター/ピン・検索・CLI/スキル・PWA に加え、インボックスとスマホ向け表のカード化。共有 URL と進行中フィルターは見送り</dd>
+  </div>
+</section>
+
+<section id="arch">
+  <h2><span class="n">02</span>全体構成</h2>
+  <p>Worker は 1 つだけ。パスで役割を分け、配信 HTML は CSP の <code>sandbox</code> で隔離する。元の構成は閲覧面と管理面を別ドメインに分けていたが、workers.dev 1 つで始めるため、オリジン分離の代わりに opaque origin 化で同じ効果を得ている。</p>
+  <figure>
+    <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="手元の PC、Cloudflare Worker、ブラウザの関係図">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" style="fill:var(--brand-2)"/></marker></defs>
+      <g font-family="var(--font-body)" font-size="12">
+        <rect x="16" y="86" width="176" height="118" rx="12" style="fill:var(--code-bg);stroke:var(--line)"/>
+        <text x="104" y="112" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--brand)">手元の PC</text>
+        <text x="104" y="134" text-anchor="middle" style="fill:var(--muted)">Claude Code / Codex</text>
+        <text x="104" y="154" text-anchor="middle" style="fill:var(--muted)">indocs CLI</text>
+        <text x="104" y="174" text-anchor="middle" style="fill:var(--muted)">skills: indocs-share / inbox / mobile</text>
+
+        <rect x="252" y="22" width="256" height="286" rx="14" style="fill:var(--surface);stroke:var(--brand)"/>
+        <text x="380" y="46" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--brand)">Cloudflare Worker「indocs」(Hono)</text>
+        <rect x="268" y="60" width="224" height="30" rx="8" style="fill:var(--code-bg)"/>
+        <text x="380" y="80" text-anchor="middle" style="fill:var(--fg)">Static Assets: 管理画面 (Preact PWA)</text>
+        <rect x="268" y="98" width="108" height="30" rx="8" style="fill:var(--code-bg)"/>
+        <text x="322" y="118" text-anchor="middle" style="fill:var(--fg)">/auth/* OIDC</text>
+        <rect x="384" y="98" width="108" height="30" rx="8" style="fill:var(--code-bg)"/>
+        <text x="438" y="118" text-anchor="middle" style="fill:var(--fg)">/view/:slug</text>
+        <rect x="268" y="136" width="108" height="30" rx="8" style="fill:var(--code-bg)"/>
+        <text x="322" y="156" text-anchor="middle" style="fill:var(--fg)">/api/owner/*</text>
+        <rect x="384" y="136" width="108" height="30" rx="8" style="fill:var(--code-bg)"/>
+        <text x="438" y="156" text-anchor="middle" style="fill:var(--fg)">/api/device/*</text>
+        <rect x="268" y="196" width="108" height="96" rx="10" style="fill:var(--th-bg)"/>
+        <text x="322" y="222" text-anchor="middle" font-weight="700" style="fill:var(--th-fg)">D1「indocs」</text>
+        <text x="322" y="244" text-anchor="middle" font-size="11" style="fill:var(--th-fg)">pages / page_states</text>
+        <text x="322" y="260" text-anchor="middle" font-size="11" style="fill:var(--th-fg)">tasks / devices</text>
+        <text x="322" y="276" text-anchor="middle" font-size="11" style="fill:var(--th-fg)">users / pairings</text>
+        <rect x="384" y="196" width="108" height="96" rx="10" style="fill:var(--th-bg)"/>
+        <text x="438" y="222" text-anchor="middle" font-weight="700" style="fill:var(--th-fg)">R2「indocs-pages」</text>
+        <text x="438" y="244" text-anchor="middle" font-size="11" style="fill:var(--th-fg)">pages/&lt;slug&gt;.html</text>
+        <text x="438" y="260" text-anchor="middle" font-size="11" style="fill:var(--th-fg)">HTML 本体のみ</text>
+        <line x1="322" y1="166" x2="322" y2="194" style="stroke:var(--line)" stroke-width="2"/>
+        <line x1="438" y1="166" x2="438" y2="194" style="stroke:var(--line)" stroke-width="2"/>
+
+        <rect x="568" y="86" width="176" height="118" rx="12" style="fill:var(--code-bg);stroke:var(--line)"/>
+        <text x="656" y="112" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--brand)">ブラウザ</text>
+        <text x="656" y="134" text-anchor="middle" style="fill:var(--muted)">PC / スマホ（PWA）</text>
+        <text x="656" y="154" text-anchor="middle" style="fill:var(--muted)">Google でログイン</text>
+        <text x="656" y="174" text-anchor="middle" style="fill:var(--muted)">配信 HTML は iframe で表示</text>
+
+        <line x1="192" y1="150" x2="250" y2="150" style="stroke:var(--brand-2)" stroke-width="2" marker-end="url(#arr)"/>
+        <text x="221" y="142" text-anchor="middle" font-size="11" style="fill:var(--brand-2)">端末トークン</text>
+        <line x1="566" y1="150" x2="510" y2="150" style="stroke:var(--brand-2)" stroke-width="2" marker-end="url(#arr)"/>
+        <text x="538" y="142" text-anchor="middle" font-size="11" style="fill:var(--brand-2)">Cookie</text>
+      </g>
+    </svg>
+    <figcaption>管理画面・認証・API・配信を 1 つの Worker が受け持つ。CLI は端末トークンで、ブラウザはセッション Cookie で入る。</figcaption>
+  </figure>
+  <div class="tags">
+    <span class="tag">Hono 4</span><span class="tag">Preact 10 + Vite 8</span><span class="tag">@cloudflare/vite-plugin</span><span class="tag">wrangler 4</span><span class="tag">D1</span><span class="tag">R2</span><span class="tag">jose（ID トークン検証）</span><span class="tag">TypeScript 7</span><span class="tag">pnpm workspace</span>
+  </div>
+  <p>静的アセットは SPA フォールバック付きで配信し、<code>/api/*</code> <code>/auth/*</code> <code>/view/*</code> だけが Worker を先に通る（<code>run_worker_first</code>）。管理画面の CSP は <code>public/_headers</code> で、配信 HTML の CSP は Worker が付ける。</p>
+</section>
+
+<section id="concepts">
+  <h2><span class="n">03</span>画面と概念</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th>用語</th><th>意味</th><th>どこで決まるか</th></tr></thead>
+    <tbody>
+      <tr><td>ページ</td><td>登録した HTML 1 枚。<code>slug</code>（英小文字・数字・ハイフン）が URL と一意性の鍵</td><td>CLI がファイル名から slugify。<code>--slug</code> で固定可</td></tr>
+      <tr><td>プロジェクト</td><td>一覧でカードにまとめる単位。表示名そのもの</td><td><code>--project</code>。省略時は Git リポジトリ名、なければ親フォルダ名</td></tr>
+      <tr><td>未読</td><td><code>pages.updated_at</code> が、自分が最後に読んだ版より新しい</td><td>読んだ版は <code>page_states.read_version</code>。未設定なら初回ログイン時刻を基準にする</td></tr>
+      <tr><td>スター / ピン</td><td>スターはプロジェクト単位とページ単位。ピンはプロジェクト単位で、ヘッダーの絞り込みチップになる</td><td>ユーザーごとに D1 に保存。端末間で同期</td></tr>
+      <tr><td>非表示</td><td>一覧から隠すだけ。本体も URL も残り、「非表示 N 件」から戻せる</td><td><code>page_states.hidden</code></td></tr>
+      <tr><td>端末</td><td>ペアリング済みの PC。CLI はここから発行された端末トークンで API を呼ぶ</td><td>設定画面のコード（10 分・一度きり）→ <code>indocs pair</code></td></tr>
+      <tr><td>依頼（request）</td><td>スマホから置く「やっておいて」。PC の <code>/inbox</code> が引き取る</td><td>インボックス画面。90 日で失効</td></tr>
+      <tr><td>確認カード（review）</td><td>PC の作業から「承認してよいか」をスマホに投げる。承認かコメントが返る</td><td><code>/mobile</code> スキル → <code>indocs review push</code>。30 日で失効</td></tr>
+    </tbody>
+  </table></div>
+  <h3>管理画面の 4 画面</h3>
+  <ul>
+    <li><b>一覧（/）</b>: 上に「すべて／未読／スター／ピン留めプロジェクト」のチップ。本文は先頭に「スター」段、続いて「今日・昨日・今週・先週・今月・先月・N 月」の区切り（JST）。各区切りの中はプロジェクトのカードで、4 件を超える分は「他 N 件」に畳む。<kbd>/</kbd> で検索</li>
+    <li><b>閲覧（/p/:slug）</b>: ヘッダー付きの全画面 iframe。開いた時点で既読になる。スター、新しいタブで開く、未読に戻す、一覧から隠す、読み直す</li>
+    <li><b>インボックス（/inbox）</b>: 「Claude への依頼」フォームと一覧、「Claude からの確認」カード（承認ボタンとコメント欄）。60 秒ごと、画面に戻ったときにも再取得</li>
+    <li><b>設定（/settings）</b>: ログイン中のメールとログアウト、PC の登録（コード発行とコマンド表示）、登録済み PC の解除、ホーム画面追加の案内</li>
+  </ul>
+  <div class="note"><b>表のカード化</b>: 配信時に Worker が <code>&lt;/body&gt;</code> の直前にスクリプトを差し込む。幅 640px 以下で、はみ出していて rowspan/colspan のない表だけを、行ごとのカード（1 列目を見出し、以降を「ラベル：値」）に畳む。</div>
+</section>
+
+<section id="flows">
+  <h2><span class="n">04</span>4 つの流れ</h2>
+  <div class="flows">
+    <div class="flow">
+      <h3>ログイン</h3>
+      <ol>
+        <li><code>/auth/login</code> が PKCE の verifier・state・nonce を 10 分の署名付き Cookie に入れ、Google へ送る</li>
+        <li><code>/auth/callback</code> でコードをトークンに交換し、ID トークンを Google の JWKS で検証（iss / aud / exp / nonce）</li>
+        <li><code>email_verified</code> かつ <code>ALLOWED_EMAILS</code> に含まれるときだけ、<code>users</code> を更新して 30 日の署名付き Cookie を発行</li>
+        <li>外れていれば 403。D1 には何も残らない</li>
+      </ol>
+    </div>
+    <div class="flow">
+      <h3>ページの登録と配信</h3>
+      <ol>
+        <li>CLI が HTML を読み、同じフォルダ配下の画像・CSS・JS を data: URL に埋め込む（1 ファイル 10MB、HTML 15MB まで）</li>
+        <li><code>PUT /api/device/pages/:slug</code> に JSON で送る。Worker は R2 に <code>pages/&lt;slug&gt;.html</code> として置き、D1 を upsert</li>
+        <li>中身のハッシュが同じなら <code>updated_at</code> を進めない（未読にならない）</li>
+        <li><code>GET /view/:slug</code> はセッションを確認し、R2 から流しつつ表カード化スクリプトを注入。CSP sandbox 付き</li>
+      </ol>
+    </div>
+    <div class="flow">
+      <h3>インボックス（スマホ → PC）</h3>
+      <ol>
+        <li>スマホで本文とプロジェクト名（任意）を入れて「頼む」。<code>tasks</code> に kind=request / status=waiting で入る</li>
+        <li>PC で <code>/inbox</code>。<code>indocs inbox</code> が waiting の依頼を返す</li>
+        <li>引き取ったら<b>作業前に</b> <code>indocs complete</code>。取り込み済みの状態は持たず、開いたままなら「誰も拾っていない」を意味する</li>
+        <li>進捗と結果はチャットで返す</li>
+      </ol>
+    </div>
+    <div class="flow">
+      <h3>確認カード（PC → スマホ）</h3>
+      <ol>
+        <li><code>/mobile</code> が状況ページを <code>indocs add</code> で登録し、カード（題名・質問・文脈・推奨）を <code>indocs review push --session</code> で送る</li>
+        <li><code>indocs review watch</code> が 20 秒ごとに回答を待つ（既定 240 分）</li>
+        <li>スマホで「承認」か「コメントを送る」。status が answered になる</li>
+        <li>PC が <code>pull</code> で取り込み、対応後に <code>complete</code>。カードはインボックスから消える</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section id="data">
+  <h2><span class="n">05</span>データモデル（D1）</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th>テーブル</th><th>主な列</th><th>覚えておくこと</th></tr></thead>
+    <tbody>
+      <tr><td><code>users</code></td><td>email, first_seen_at, last_seen_at</td><td>初回ログインより前に登録されたページは既読扱いにするための基準</td></tr>
+      <tr><td><code>pages</code></td><td>slug, title, project, project_label, source, device_id, content_hash, size, created_at, updated_at, deleted_at</td><td>削除は <code>deleted_at</code> を立てるソフト削除。R2 の本体は消す</td></tr>
+      <tr><td><code>page_states</code></td><td>user_email, slug, read_version, starred, hidden</td><td>既読に戻すときは <code>read_version = updated_at</code>、未読に戻すときは空文字</td></tr>
+      <tr><td><code>project_states</code></td><td>user_email, project, starred, pinned</td><td>プロジェクト単位のスターとピン</td></tr>
+      <tr><td><code>devices</code></td><td>id, token_hash, name, user_email, created_at, last_used_at, revoked_at</td><td>トークンは SHA-256 のみ保存。解除は <code>revoked_at</code></td></tr>
+      <tr><td><code>pairings</code></td><td>code_hash, user_email, created_at, expires_at, claimed_at</td><td>コードは 32 文字のアルファベット（I/O/0/1 を除く）8 桁。<code>UPDATE ... WHERE claimed_at IS NULL</code> で一度きりを保証</td></tr>
+      <tr><td><code>tasks</code></td><td>id, kind, user_email, device_id, session_id, title, body, target, context, recommendation, status, approved, response_text, 各時刻, expires_at</td><td>kind は request / review、status は waiting / answered / completed。期限切れは一覧取得時に掃除</td></tr>
+    </tbody>
+  </table></div>
+  <p>時刻はすべて ISO 8601 の文字列で持ち、文字列比較で前後を決める。複数の許可メールがいる場合、ページは共有、既読・スター・ピン・依頼・端末はメールごとに分かれる。</p>
+</section>
+
+<section id="api">
+  <h2><span class="n">06</span>API</h2>
+  <p>ブラウザ用（owner）はセッション Cookie、CLI 用（device）は <code>Authorization: Bearer</code> の端末トークン。どちらも毎リクエストで許可メールを照合する。</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>系統</th><th>メソッドとパス</th><th>役割</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="5">auth</td><td><code>GET /auth/login?return=</code></td><td>Google へ。戻り先は同一オリジンのパスだけ受け付ける</td></tr>
+      <tr><td><code>GET /auth/callback</code></td><td>コード交換・検証・Cookie 発行</td></tr>
+      <tr><td><code>POST /auth/logout</code></td><td>Cookie を消す</td></tr>
+      <tr><td><code>GET /auth/me</code></td><td>ログイン中のメール。未ログインは 401</td></tr>
+      <tr><td><code>GET /auth/dev-login</code></td><td>ローカル開発専用。<code>DEV_LOGIN_EMAIL</code> があり localhost のときだけ</td></tr>
+      <tr><td rowspan="8">owner</td><td><code>GET /api/owner/pages</code></td><td>ページ一覧＋自分の既読・スター・非表示＋プロジェクト状態</td></tr>
+      <tr><td><code>PUT /api/owner/pages/:slug/state</code></td><td>read / starred / hidden の部分更新</td></tr>
+      <tr><td><code>PUT /api/owner/projects/:project/state</code></td><td>starred / pinned</td></tr>
+      <tr><td><code>POST /api/owner/pairings</code></td><td>ペアリングコード発行</td></tr>
+      <tr><td><code>GET/DELETE /api/owner/devices[/:id]</code></td><td>登録済み PC の一覧と解除</td></tr>
+      <tr><td><code>GET /api/owner/tasks?all=1</code></td><td>未完了の依頼とカード（all で完了も）</td></tr>
+      <tr><td><code>POST /api/owner/tasks</code></td><td>依頼を置く</td></tr>
+      <tr><td><code>POST /api/owner/tasks/:id/answer</code>, <code>DELETE /api/owner/tasks/:id</code></td><td>カードに回答／依頼やカードを取り消す</td></tr>
+      <tr><td rowspan="6">device</td><td><code>POST /api/device/pair</code></td><td>コードを端末トークンに交換（認証なし）</td></tr>
+      <tr><td><code>GET /api/device/me</code></td><td>端末名とメール</td></tr>
+      <tr><td><code>GET /api/device/pages</code></td><td>ページ一覧</td></tr>
+      <tr><td><code>PUT/DELETE /api/device/pages/:slug</code></td><td>登録・更新／削除</td></tr>
+      <tr><td><code>GET /api/device/tasks?kind&amp;status&amp;sessionId</code></td><td>依頼・カードの取得</td></tr>
+      <tr><td><code>POST /api/device/tasks</code>, <code>POST /api/device/tasks/:id/complete</code></td><td>カードを送る／完了にする</td></tr>
+      <tr><td>view</td><td><code>GET /view/:slug</code></td><td>配信 HTML。未ログインはログインへリダイレクト</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="cli">
+  <h2><span class="n">07</span>CLI とスキル</h2>
+  <p><code>indocs</code> は依存ライブラリのない単一ファイル（esbuild でバンドル）。この PC では <code>~/.local/bin/indocs</code> がリポジトリの <code>packages/cli/dist/indocs.mjs</code> を指している。設定は <code>~/.config/indocs/config.json</code>（0600）。</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>コマンド</th><th>やること</th></tr></thead>
+    <tbody>
+      <tr><td><code>indocs pair &lt;code&gt; --url &lt;URL&gt; [--name]</code></td><td>この PC を登録する。名前の既定はホスト名</td></tr>
+      <tr><td><code>indocs add &lt;file.html&gt; [--project] [--title] [--slug] [--label]</code></td><td>埋め込み → 登録。URL と埋め込めなかった参照を表示</td></tr>
+      <tr><td><code>indocs list [--json]</code> / <code>indocs remove &lt;slug&gt;</code></td><td>一覧／削除</td></tr>
+      <tr><td><code>indocs whoami</code></td><td>接続先と端末名の確認</td></tr>
+      <tr><td><code>indocs inbox [--json]</code> / <code>indocs complete &lt;id...&gt;</code></td><td>依頼の取得／完了</td></tr>
+      <tr><td><code>indocs review push --session &lt;id&gt; [--file]</code></td><td>カードを送る（標準入力の JSON でも可、1〜5 枚）</td></tr>
+      <tr><td><code>indocs review pull|watch --session &lt;id&gt; [--timeout-minutes]</code></td><td>回答の取得／回答待ち（時間切れは終了コード 2）</td></tr>
+    </tbody>
+  </table></div>
+  <p>環境変数は <code>INDOCS_URL</code>（接続先の上書き）と <code>INDOCS_CONFIG_DIR</code>（設定の置き場所）。終了コードは 401 のとき 3、それ以外のエラーは 1。</p>
+  <h3>Claude Code のスキル</h3>
+  <p><code>~/.claude/skills/</code> にリポジトリの <code>skills/</code> を名前ごとにシンボリックリンクしている。いずれも CLI を使い、API を直接呼ばず、端末トークンを表示しない。</p>
+  <ul>
+    <li><b>indocs-share</b>: 「inDocs に共有して」「この HTML を追加して」で <code>indocs add</code>。未登録なら設定画面でのコード発行を案内する</li>
+    <li><b>inbox</b>: <code>/inbox</code>。依頼を読み、作業前に完了にし、<code>target</code> と依頼文から作業フォルダを見極めて始める</li>
+    <li><b>mobile</b>: <code>/mobile</code>。状況ページを登録し、カードを送り、回答を待って続ける。未回答のまま完了を宣言しない</li>
+  </ul>
+</section>
+
+<section id="security">
+  <h2><span class="n">08</span>セキュリティ設計</h2>
+  <ul>
+    <li><b>入口は許可リストだけ</b>: サインアップはない。<code>ALLOWED_EMAILS</code>（secret）に無いメールはコールバック時点で 403 になり、D1 にも残らない。セッションや端末トークンも毎リクエストで再照合するので、外せば即座に締め出せる</li>
+    <li><b>配信面の隔離</b>: <code>/view/*</code> の CSP は <code>sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation</code>。ドキュメントは opaque origin になり、Cookie・localStorage・同一オリジンの API に触れない。<code>connect-src 'none'</code>、<code>form-action 'none'</code>、<code>frame-ancestors 'self'</code>。CDN のスクリプトや Google Fonts は許す（隔離済みで、HTML の中身以上は漏れない）</li>
+    <li><b>管理面の CSP</b>: <code>default-src 'self'</code>、<code>frame-ancestors 'none'</code>。iframe 側には <code>sandbox</code> 属性を付けない（一部の組み込みブラウザが遮断するため。隔離はレスポンス側の CSP で担保）</li>
+    <li><b>CSRF</b>: owner API の GET 以外は <code>Origin</code> が自分と一致しなければ 403。Cookie は HttpOnly / Secure / SameSite=Lax</li>
+    <li><b>戻り先の検証</b>: <code>return</code> は制御文字・バックスラッシュ・<code>//</code> 始まりを捨て、URL として正規化した後にも同じ条件を掛ける（<code>/.//evil</code> 対策）</li>
+    <li><b>端末トークン</b>: 生の値は端末にだけ返し、D1 には SHA-256。ペアリングコードは 10 分・一度きり</li>
+    <li><b>開発用ログイン</b>: <code>DEV_LOGIN_EMAIL</code> があり、かつ localhost からのときだけ。本番では 404</li>
+  </ul>
+</section>
+
+<section id="ops">
+  <h2><span class="n">09</span>運用と開発</h2>
+  <div class="kv">
+    <dt>Worker</dt><dd><code>indocs</code>（workers.dev）。デプロイは <code>pnpm deploy</code>（vite build → wrangler deploy）</dd>
+    <dt>D1</dt><dd><code>indocs</code>。スキーマは <code>apps/web/migrations/</code>。リモート適用は <code>pnpm --filter @indocs/web db:migrate:remote</code></dd>
+    <dt>R2</dt><dd><code>indocs-pages</code>。初回はダッシュボードで R2 の有効化が必要だった</dd>
+    <dt>secret</dt><dd><code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> / <code>ALLOWED_EMAILS</code> / <code>SESSION_SECRET</code>。<code>wrangler secret put</code> で登録、再デプロイ不要</dd>
+    <dt>Google</dt><dd>OAuth クライアント（ウェブ）。リダイレクト URI は <code>/auth/callback</code>（本番と <code>http://localhost:5173</code>）。同意画面は「テスト」のまま、テストユーザーに自分だけ</dd>
+    <dt>確認</dt><dd><code>wrangler d1 execute indocs --remote --command "SELECT ..."</code> で台帳を直接見られる</dd>
+  </div>
+  <h3>ローカル開発</h3>
+<pre><code>cp apps/web/.dev.vars.example apps/web/.dev.vars   # 値を埋める
+pnpm --filter @indocs/web db:migrate:local
+pnpm dev                                           # http://localhost:5173
+# ログイン: http://localhost:5173/auth/dev-login（DEV_LOGIN_EMAIL が必要）
+# CLI を向ける: INDOCS_URL=http://localhost:5173 indocs ...</code></pre>
+  <div class="note"><b>落とし穴</b>: <code>wrangler.jsonc</code> の <code>database_id</code> を書き換えるとローカル D1 の保存先が変わり、テーブルが無い状態になる。マイグレーションを当て直す。</div>
+  <p>検査は <code>pnpm check</code>（tsc）、<code>pnpm test</code>（vitest。グルーピング、タイトル抽出、HTML バンドル、戻り先検証）。Vite のビルドは Worker と管理画面の両方を <code>apps/web/dist/</code> に出す。</p>
+</section>
+
+<section id="repo">
+  <h2><span class="n">10</span>リポジトリ地図</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th>場所</th><th>中身</th></tr></thead>
+    <tbody>
+      <tr><td><code>apps/web/src/worker/</code></td><td><code>index.ts</code>（ルート束ね）、<code>auth/</code>（Google OIDC）、<code>routes/</code>（owner / device / view）、<code>db/</code>（D1 クエリ）、<code>middleware/</code>（セッション・端末・ヘッダー）、<code>lib/</code>（暗号・セッション・戻り先・HTML）、<code>assets/mobile-tables.js</code></td></tr>
+      <tr><td><code>apps/web/src/client/</code></td><td><code>app.tsx</code>（認証とルーティング）、<code>store.ts</code>（ページと依頼の状態）、<code>views/</code>（List / Viewer / Inbox / Settings）、<code>components/</code>、<code>style.css</code></td></tr>
+      <tr><td><code>apps/web/src/shared/</code></td><td><code>types.ts</code>（API の型）、<code>grouping.ts</code>（日付区切り・プロジェクトまとめ・検索）</td></tr>
+      <tr><td><code>apps/web/public/</code></td><td>PWA の manifest、Service Worker（アプリシェルだけキャッシュ）、アイコン、<code>_headers</code>（管理面 CSP）</td></tr>
+      <tr><td><code>apps/web/migrations/</code></td><td>D1 スキーマ</td></tr>
+      <tr><td><code>packages/cli/src/</code></td><td><code>index.ts</code>（引数解析）、<code>commands/</code>、<code>bundle.ts</code>（埋め込み）、<code>config.ts</code>、<code>api.ts</code></td></tr>
+      <tr><td><code>skills/</code></td><td>indocs-share / inbox / mobile の SKILL.md</td></tr>
+      <tr><td><code>docs/</code></td><td><code>design.md</code>（設計と採用しなかった案）、<code>setup.md</code>（デプロイ手順）、この資料</td></tr>
+      <tr><td><code>examples/welcome.html</code></td><td>動作確認用のサンプルページ</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="decisions">
+  <h2><span class="n">11</span>決めたこと</h2>
+  <div class="table-scroll"><table class="decisions">
+    <thead><tr><th>論点</th><th>選んだ方</th><th>理由と捨てた案</th></tr></thead>
+    <tbody>
+      <tr><td>認証</td><td>Workers 上で Google OIDC を自前実装</td><td>コードと secret だけで環境を再現できる。Cloudflare Access は Zero Trust 側の設定に依存するので見送り</td></tr>
+      <tr><td>オリジン</td><td>Worker 1 つ、配信面は CSP sandbox で隔離</td><td>workers.dev 1 つで始めたかった。別ドメイン 2 つに分ける案は、カスタムドメインを用意したときに <code>/view/*</code> を切り出せる形で残す</td></tr>
+      <tr><td>台帳</td><td>サーバー（D1）が正。CLI は push するだけ</td><td>元実装のローカル YAML を正とする方式は、複数 PC から登録すると衝突する</td></tr>
+      <tr><td>閲覧</td><td>PC もスマホも iframe</td><td>スマホでトップレベル遷移にすると、ホーム画面から開いた PWA で戻れなくなる</td></tr>
+      <tr><td>配信面の外部読み込み</td><td>CDN スクリプトと Web フォントを許可</td><td>Claude が作る HTML は Chart.js や Google Fonts をよく使う。sandbox で隔離済みなので管理面には届かない</td></tr>
+      <tr><td>フロント</td><td>Preact 10 + Vite、フレームワーク最小</td><td>一覧・既読・インボックスと状態が多く素の JS では辛い。Preact 11 は出たばかりで周辺の対応が読めず 10 系に</td></tr>
+      <tr><td>既読の基準</td><td>初回ログイン時刻より前のページは既読</td><td>新しい許可メールを足したときに全ページが未読になるのを避ける</td></tr>
+      <tr><td>スコープ外</td><td>共有 URL、進行中フィルター、プルリフレッシュ</td><td>一人で使う初版には不要と判断。設計は後から足せる</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="next">
+  <h2><span class="n">12</span>現状と次の一手</h2>
+  <p>2026 年 10 月 28 日（水）に設計から本番デプロイまでを 1 日で行った。本番ではログイン、この PC のペアリング、サンプルページの登録まで確認済み。GitHub には public で 3 コミットを push した。</p>
+  <ul>
+    <li>実機のスマホで、閲覧画面の iframe 表示と表のカード化、ホーム画面追加を確かめる</li>
+    <li>普段の Claude Code の作業で「inDocs に共有して」と <code>/inbox</code> を使い、スキルの文言と既定のプロジェクト名が実務に合うかを見る</li>
+    <li>必要になったら、期限付き共有 URL と進行中フィルターを <code>docs/design.md</code> の方針に沿って足す</li>
+  </ul>
+  <div class="kv">
+    <dt>本番</dt><dd><a href="https://indocs.tagucch.workers.dev" target="_blank" rel="noopener">https://indocs.tagucch.workers.dev</a></dd>
+    <dt>リポジトリ</dt><dd><a href="https://github.com/tagucch/inDocs" target="_blank" rel="noopener">https://github.com/tagucch/inDocs</a></dd>
+    <dt>設計メモ</dt><dd><code>docs/design.md</code>、セットアップ手順は <code>docs/setup.md</code></dd>
+    <dt>参考元</dt><dd><a href="https://github.com/minorun365/html-share" target="_blank" rel="noopener">minorun365/html-share</a>、発表資料「AI秘書と毎日働くのはもう当たり前」（Qiita Conference 2026 Autumn）</dd>
+  </div>
+</section>
+
+</main>
+</div>
+</div>
+</body>
+</html>
