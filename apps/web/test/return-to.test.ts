@@ -22,4 +22,12 @@ describe("safeReturnTo", () => {
     expect(safeReturnTo("javascript:alert(1)")).toBe("/");
     expect(safeReturnTo("inbox")).toBe("/");
   });
+
+  it("正規化すると // 始まりになる値も捨てる", () => {
+    expect(safeReturnTo("/.//evil.example")).toBe("/");
+    expect(safeReturnTo("/a/..//evil.example")).toBe("/");
+    expect(safeReturnTo("/%2e//evil.example")).toBe("/");
+    expect(safeReturnTo("/%2E%2E//evil.example")).toBe("/");
+    expect(safeReturnTo("/a/../inbox")).toBe("/inbox");
+  });
 });
