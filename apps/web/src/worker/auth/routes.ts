@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { touchUser } from "../db/users";
 import { type AppContext, appOrigin, isAllowedEmail, isLocalRequest } from "../env";
 import { openJson, randomToken, sealJson } from "../lib/crypto";
+import { safeReturnTo } from "../lib/return-to";
 import { clearSession, isSecureRequest, issueSession, readSession } from "../lib/session";
 import { authorizeUrl, exchangeCode, pkceChallenge, verifyIdToken } from "./google";
 
@@ -13,11 +14,6 @@ const OAUTH_TTL_SECONDS = 600;
 type PendingLogin = { state: string; nonce: string; verifier: string; returnTo: string; exp: number };
 
 export const auth = new Hono<AppContext>();
-
-function safeReturnTo(value: string | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return "/";
-  return value;
-}
 
 function loginFailed(c: Context<AppContext>, status: 400 | 403 | 500, message: string) {
   return c.html(

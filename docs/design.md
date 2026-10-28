@@ -56,6 +56,8 @@ iframe 側には `sandbox` 属性を付けない。隔離は配信レスポン�
 3. `email_verified` が真で、`ALLOWED_EMAILS` に含まれるメールだけを通す。それ以外は 403
 4. HMAC 署名付きのセッション Cookie（`indocs_session`、30 日、HttpOnly / Secure / SameSite=Lax）を発行する
 
+ログイン後の戻り先（`return`）は同一オリジンのパスだけを受け付ける。制御文字やバックスラッシュを含む値、`//` で始まる値は、ブラウザ側の URL 正規化で外部オリジンに化けるため捨てる。
+
 セッションはステートレスで、D1 には `users` に最終ログイン時刻だけを残す。失効させたいときは `SESSION_SECRET` を回す。
 
 ### CLI の認可（端末トークン）

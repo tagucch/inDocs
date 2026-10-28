@@ -107,6 +107,8 @@ pnpm --filter @indocs/web db:migrate:local
 pnpm dev                                           # http://localhost:5173
 ```
 
+ローカルの D1 は `wrangler.jsonc` の `database_id` ごとに別のファイルに保存されます。`database_id` を書き換えたあとは、上のマイグレーションをもう一度実行してください。
+
 `.dev.vars` に `DEV_LOGIN_EMAIL` を書くと、`http://localhost:5173/auth/dev-login` で Google を経由せずにそのメールとしてログインできます。この入口は `localhost` からのアクセスで、かつその変数があるときだけ有効です。本番の secret には絶対に置かないでください。
 
 CLI をローカルの Worker に向けるには `INDOCS_URL=http://localhost:5173` を付けるか、`indocs pair <code> --url http://localhost:5173` でペアリングします。設定の置き場所を分けたいときは `INDOCS_CONFIG_DIR` を使います。
