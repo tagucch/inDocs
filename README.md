@@ -52,6 +52,8 @@ Cloudflare Worker "indocs" (Hono)
 
 > `/mobile` で、続きはスマホから判断する
 
+> `/github-digest` で、watch 中リポジトリの昨日の Issue / PR をまとめて流す
+
 CLI を直接使うこともできます。最初の動作確認には同梱のサンプル（`indocs add examples/welcome.html --project inDocs`）が使えます。
 
 ```bash
@@ -67,7 +69,7 @@ indocs review push --session <id> --file cards.json
 ```text
 apps/web/        Worker + 管理画面（Hono, Preact, Vite, wrangler）
 packages/cli/    indocs CLI（Node 22+, 依存なし）
-skills/          Claude Code 用スキル（indocs-share, inbox, mobile）
+skills/          Claude Code 用スキル（indocs-share, inbox, mobile, github-digest）
 docs/            設計メモとセットアップ手順
 ```
 
