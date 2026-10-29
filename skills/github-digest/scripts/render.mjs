@@ -23,10 +23,18 @@ const fmtTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 const fmtStamp = (d) => `${d.getMonth() + 1}/${d.getDate()} ${fmtTime(d)}`;
 
 const start = new Date(data.window.start);
-const lastDay = new Date(new Date(data.window.end).getTime() - 1);
-const multiDay = data.window.days > 1;
-const dateLine = multiDay ? `${fmtDate(start)} 〜 ${fmtDate(lastDay)}` : fmtDate(start);
-const title = `GitHub 朝刊 ${data.window.label}`;
+const end = new Date(data.window.end);
+const lastMoment = new Date(end.getTime() - 1);
+const isRange = data.window.mode === "range";
+const multiDay = fmtDate(start) !== fmtDate(lastMoment);
+const dateLine = isRange
+  ? multiDay
+    ? `${fmtDate(start)}${fmtTime(start)} 〜 ${fmtDate(end)}${fmtTime(end)}`
+    : `${fmtDate(start)}${fmtTime(start)} 〜 ${fmtTime(end)}`
+  : multiDay
+    ? `${fmtDate(start)} 〜 ${fmtDate(lastMoment)}`
+    : fmtDate(start);
+const title = `GitHub 朝刊 ${data.window.title ?? data.window.label}`;
 const generated = new Date(data.generatedAt);
 
 const STATE = {
@@ -108,7 +116,7 @@ const errors = data.errors.length
 
 const empty = `
     <section class="empty">
-      <p>${multiDay ? "この期間" : "この日"}の新着 Issue / PR はありませんでした。</p>
+      <p>${isRange || multiDay ? "この期間" : "この日"}の新着 Issue / PR はありませんでした。</p>
     </section>`;
 
 const html = `<!doctype html>
@@ -217,7 +225,7 @@ footer ul { margin: 4px 0 0; padding-left: 1.2em; columns: 2; column-gap: 24px; 
 <body>
 <main>
   <header class="masthead">
-    <p class="eyebrow">watch 中 ${data.repos.length} リポジトリの新着 Issue / PR</p>
+    <p class="eyebrow">${isRange ? "前回の朝刊からの新着 Issue / PR · " : "新着 Issue / PR · "}watch 中 ${data.repos.length} リポジトリ</p>
     <h1>GitHub 朝刊</h1>
     <p class="date">${esc(dateLine)}</p>
   </header>
@@ -238,6 +246,6 @@ footer ul { margin: 4px 0 0; padding-left: 1.2em; columns: 2; column-gap: 24px; 
 </html>
 `;
 
-const out = values.out ?? `github-digest-${data.window.label.replace(/[^0-9-]+/g, "_")}.html`;
+const out = values.out ?? `github-digest-${data.window.slug ?? data.window.label.replace(/[^0-9-]+/g, "_")}.html`;
 writeFileSync(out, html);
 console.error(`${out}: ${data.items.length} items`);

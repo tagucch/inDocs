@@ -2,11 +2,14 @@
 import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
+import { readState, statePath } from "./state.mjs";
 
 const { values } = parseArgs({
   options: {
     date: { type: "string" },
-    days: { type: "string", default: "1" },
+    days: { type: "string" },
+    since: { type: "string" },
+    until: { type: "string" },
     repo: { type: "string", multiple: true },
     out: { type: "string" },
     "body-chars": { type: "string", default: "1500" },
@@ -17,21 +20,60 @@ function gh(args) {
   return execFileSync("gh", ["api", ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 }
 
+const DAY = 86400000;
+const pad = (n) => String(n).padStart(2, "0");
+const ymdOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const hmOf = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
 function localMidnight(ymd) {
   const [y, m, d] = ymd.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
 
-function ymdOf(date) {
-  const p = (n) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`;
+function resolveWindow() {
+  if (values.date || values.days) {
+    const days = Math.max(1, Number(values.days ?? "1"));
+    const end = values.date ? new Date(localMidnight(values.date).getTime() + DAY) : localMidnight(ymdOf(new Date()));
+    const start = new Date(end.getTime() - days * DAY);
+    const lastDay = new Date(end.getTime() - DAY);
+    const label = days === 1 ? ymdOf(start) : `${ymdOf(start)} 〜 ${ymdOf(lastDay)}`;
+    const slug = days === 1 ? ymdOf(start) : `${ymdOf(start)}_${ymdOf(lastDay)}`;
+    return { mode: "date", start, end, days, label, title: label, slug, basis: null };
+  }
+  const end = values.until ? new Date(values.until) : new Date();
+  let start;
+  let basis;
+  if (values.since) {
+    start = new Date(values.since);
+    basis = "--since";
+  } else {
+    const state = readState();
+    if (state?.lastRunAt) {
+      start = new Date(state.lastRunAt);
+      basis = `前回の実行 (${statePath()})`;
+    } else {
+      start = new Date(end.getTime() - DAY);
+      basis = "記録がないため直近 24 時間";
+    }
+  }
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start >= end) {
+    throw new Error(`期間が不正です: ${start.toISOString()} 〜 ${end.toISOString()}`);
+  }
+  const days = Math.ceil((end.getTime() - start.getTime()) / DAY);
+  return {
+    mode: "range",
+    start,
+    end,
+    days,
+    label: `${ymdOf(start)} ${hmOf(start)} 〜 ${ymdOf(end)} ${hmOf(end)}`,
+    title: ymdOf(end),
+    slug: `${ymdOf(end)}-${hmOf(end).replace(":", "")}`,
+    basis,
+  };
 }
 
-const days = Math.max(1, Number(values.days));
-const end = values.date ? new Date(localMidnight(values.date).getTime() + 86400000) : localMidnight(ymdOf(new Date()));
-const start = new Date(end.getTime() - days * 86400000);
-const lastDay = new Date(end.getTime() - 86400000);
-const label = days === 1 ? ymdOf(start) : `${ymdOf(start)} 〜 ${ymdOf(lastDay)}`;
+const window = resolveWindow();
+const { start, end } = window;
 
 const repos = values.repo?.length
   ? values.repo
@@ -100,7 +142,7 @@ for (const repo of repos) {
 items.sort((a, b) => a.repo.localeCompare(b.repo) || a.createdAt.localeCompare(b.createdAt));
 
 const result = {
-  window: { start: start.toISOString(), end: end.toISOString(), label, days },
+  window: { ...window, start: start.toISOString(), end: end.toISOString() },
   generatedAt: new Date().toISOString(),
   repos,
   counts: {
@@ -113,9 +155,11 @@ const result = {
 };
 
 const json = JSON.stringify(result, null, 2);
+const summary = `${result.counts.issues} issues, ${result.counts.prs} PRs in ${result.counts.activeRepos}/${repos.length} repos (${window.label}${window.basis ? `; 起点: ${window.basis}` : ""})`;
 if (values.out) {
   writeFileSync(values.out, json);
-  console.error(`${values.out}: ${result.counts.issues} issues, ${result.counts.prs} PRs in ${result.counts.activeRepos}/${repos.length} repos (${label})`);
+  console.error(`${values.out}: ${summary}`);
 } else {
+  console.error(summary);
   process.stdout.write(json + "\n");
 }
