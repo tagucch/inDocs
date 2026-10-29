@@ -68,7 +68,9 @@ Claude Code のクラウド定期実行（routine）がこのファイルを読�
 ## routine の設定
 
 - スケジュール: 平日 10:00 JST。routine の cron は UTC なので `0 1 * * 1-5`
-- 環境: Claude Code の Default 環境。環境変数に `GH_TOKEN` と `INDOCS_TOKEN` を secret として入れる。ネットワークは `api.github.com`、`registry.npmjs.org`、`indocs.tagucch.workers.dev` に出られること
+- 環境: Claude Code の Default 環境。claude.ai/code/routines でこの routine を Edit → Advanced settings → General → Cloud environment の雲アイコン → Default にホバーして設定アイコン、で開く「Edit cloud environment」に設定する
+  - Environment variables: `GH_TOKEN=...` と `INDOCS_TOKEN=...` を 1 行ずつ。環境を使える人には値が見えるので、個人用の環境でだけ使う
+  - Network access: Custom にして Allowed domains に `indocs.tagucch.workers.dev` を足し、「Also include default list of common package managers」を有効にする（pnpm install と GitHub のため）。既定の Trusted のままだと inDocs への接続が 403 `host_not_allowed` で落ちる
 - プロンプト:
 
   > 作業ディレクトリに tagucch/inDocs の clone がある。`skills/github-digest/routine.md` を読み、書いてある手順をそのまま最後まで実行する。環境変数 GH_TOKEN と INDOCS_TOKEN の値は決して表示しない。
