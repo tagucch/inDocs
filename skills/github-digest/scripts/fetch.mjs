@@ -16,8 +16,38 @@ const { values } = parseArgs({
   },
 });
 
+const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+
 function gh(args) {
   return execFileSync("gh", ["api", ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+}
+
+async function api(pathname) {
+  if (!token) return JSON.parse(gh([pathname]));
+  const response = await fetch(`https://api.github.com/${pathname}`, {
+    headers: {
+      accept: "application/vnd.github+json",
+      authorization: `Bearer ${token}`,
+      "user-agent": "github-digest",
+      "x-github-api-version": "2022-11-28",
+    },
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(`HTTP ${response.status}${body.message ? `: ${body.message}` : ""}`);
+  }
+  return response.json();
+}
+
+async function subscriptions() {
+  if (!token) return gh(["user/subscriptions", "--paginate", "--jq", ".[].full_name"]).trim().split("\n").filter(Boolean);
+  const names = [];
+  for (let page = 1; page <= 20; page++) {
+    const list = await api(`user/subscriptions?per_page=100&page=${page}`);
+    names.push(...list.map((repo) => repo.full_name));
+    if (list.length < 100) break;
+  }
+  return names;
 }
 
 const DAY = 86400000;
@@ -75,9 +105,7 @@ function resolveWindow() {
 const window = resolveWindow();
 const { start, end } = window;
 
-const repos = values.repo?.length
-  ? values.repo
-  : gh(["user/subscriptions", "--paginate", "--jq", ".[].full_name"]).trim().split("\n").filter(Boolean);
+const repos = values.repo?.length ? values.repo : await subscriptions();
 
 function cleanBody(body, limit) {
   if (!body) return "";
@@ -99,7 +127,7 @@ for (const repo of repos) {
   try {
     for (let page = 1; page <= 10; page++) {
       const query = `state=all&since=${encodeURIComponent(start.toISOString())}&sort=created&direction=desc&per_page=100&page=${page}`;
-      const list = JSON.parse(gh([`repos/${repo}/issues?${query}`]));
+      const list = await api(`repos/${repo}/issues?${query}`);
       for (const it of list) {
         const created = new Date(it.created_at);
         if (created < start || created >= end) continue;
@@ -116,7 +144,7 @@ for (const repo of repos) {
           body: cleanBody(it.body, bodyChars),
         };
         if (it.pull_request) {
-          const pr = JSON.parse(gh([`repos/${repo}/pulls/${it.number}`]));
+          const pr = await api(`repos/${repo}/pulls/${it.number}`);
           items.push({
             ...base,
             type: "pr",

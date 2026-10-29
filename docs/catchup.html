@@ -342,7 +342,7 @@ figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
       <tr><td><code>indocs review pull|watch --session &lt;id&gt; [--timeout-minutes]</code></td><td>回答の取得／回答待ち（時間切れは終了コード 2）</td></tr>
     </tbody>
   </table></div>
-  <p>環境変数は <code>INDOCS_URL</code>（接続先の上書き）と <code>INDOCS_CONFIG_DIR</code>（設定の置き場所）。終了コードは 401 のとき 3、それ以外のエラーは 1。</p>
+  <p>環境変数は <code>INDOCS_URL</code>（接続先の上書き）、<code>INDOCS_TOKEN</code>（<code>config.json</code> の代わりに使う端末トークン）、<code>INDOCS_CONFIG_DIR</code>（設定の置き場所）。終了コードは 401 のとき 3、それ以外のエラーは 1。</p>
   <h3>Claude Code のスキル</h3>
   <p><code>~/.claude/skills/</code> にリポジトリの <code>skills/</code> を名前ごとにシンボリックリンクしている。いずれも CLI を使い、API を直接呼ばず、端末トークンを表示しない。</p>
   <ul>
