@@ -5,9 +5,9 @@ import path from "node:path";
 export type Config = {
   baseUrl: string;
   token: string;
-  deviceId: string;
-  deviceName: string;
-  email: string;
+  deviceId?: string;
+  deviceName?: string;
+  email?: string;
 };
 
 export function configDir(): string {
@@ -49,10 +49,22 @@ export function resolveBaseUrl(explicit: string | undefined, config: Config | nu
   return normalizeBaseUrl(candidate);
 }
 
+export function configFromEnv(): Config | null {
+  const token = process.env.INDOCS_TOKEN?.trim();
+  if (!token) return null;
+  const url = process.env.INDOCS_URL;
+  if (!url) throw new Error("INDOCS_TOKEN を使うときは INDOCS_URL に inDocs の URL も指定してください");
+  return { baseUrl: normalizeBaseUrl(url), token };
+}
+
 export async function requireConfig(): Promise<Config> {
+  const fromEnv = configFromEnv();
+  if (fromEnv) return fromEnv;
   const config = await loadConfig();
   if (!config) {
-    throw new Error("この PC はまだ登録されていません。inDocs の設定画面でコードを発行し、`indocs pair <code> --url <inDocs の URL>` を実行してください");
+    throw new Error(
+      "この PC はまだ登録されていません。inDocs の設定画面でコードを発行し、`indocs pair <code> --url <inDocs の URL>` を実行してください。config.json を置けない環境では INDOCS_TOKEN と INDOCS_URL を環境変数で渡せます",
+    );
   }
   if (process.env.INDOCS_URL) config.baseUrl = normalizeBaseUrl(process.env.INDOCS_URL);
   return config;

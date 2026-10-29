@@ -82,6 +82,15 @@ indocs whoami
 
 端末トークンは `~/.config/indocs/config.json` に 0600 で保存されます。
 
+CI やクラウドの定期実行のように `config.json` を置けない環境では、環境変数 `INDOCS_TOKEN`（端末トークン）と `INDOCS_URL` を渡せば動きます。`INDOCS_TOKEN` があるときは `config.json` より優先されます。トークンは手元の設定を壊さないよう、別の端末として登録して取り出します。
+
+```bash
+export INDOCS_CONFIG_DIR="$(mktemp -d)"
+indocs pair XXXX-XXXX --url https://indocs.<アカウント名>.workers.dev --name "cloud routine"
+cat "$INDOCS_CONFIG_DIR/config.json"   # token の値を実行環境の secret に登録する
+unset INDOCS_CONFIG_DIR
+```
+
 ## 8. Claude Code にスキルを入れる
 
 ```bash

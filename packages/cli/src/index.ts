@@ -21,7 +21,7 @@ const HELP = `indocs - AI エージェントが作った HTML を inDocs に登�
   indocs review watch --session <id> [--timeout-minutes 240]   回答が来るまで待つ
 
 設定ファイル: ${configPath()}
-環境変数:     INDOCS_URL（接続先の上書き）, INDOCS_CONFIG_DIR（設定の置き場所）
+環境変数:     INDOCS_URL（接続先の上書き）, INDOCS_TOKEN（config.json の代わりに使う端末トークン。INDOCS_URL と一緒に指定）, INDOCS_CONFIG_DIR（設定の置き場所）
 `;
 
 async function main(argv: string[]): Promise<void> {
