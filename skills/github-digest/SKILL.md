@@ -5,7 +5,7 @@ description: Build the user's "GitHub 朝刊" - collect the issues and pull requ
 
 # GitHub 朝刊
 
-watch 中のリポジトリに前回の実行以降できた Issue / PR を 1 枚の HTML にまとめ、inDocs に登録する。取得は `gh`、登録は `indocs` CLI を使う。API を直接叩かない。トークンを表示しない。
+watch 中のリポジトリに前回の実行以降できた Issue / PR を 1 枚の HTML にまとめ、inDocs に登録する。取得は `gh`（`GH_TOKEN` か `GITHUB_TOKEN` があるときは `fetch.mjs` が GitHub API を直接呼ぶ）、登録は `indocs` CLI を使う。スクリプトを通さずに API を叩かない。トークンを表示しない。
 
 スクリプトは `~/.claude/skills/github-digest/scripts/` にある。作業ファイルはセッションのスクラッチディレクトリ（なければ `mktemp -d`）に置く。以下 `$WORK` と書く。前回の実行時刻は `~/.local/state/github-digest/state.json`（`GITHUB_DIGEST_STATE` で変更可）に記録される。スクリプトはローカル時刻で動くので、JST でない環境では `TZ=Asia/Tokyo` を付ける。
 
@@ -69,3 +69,7 @@ watch 中のリポジトリに前回の実行以降できた Issue / PR を 1 �
 - `gh` が見つからない → Homebrew の `gh` が PATH にない。`/opt/homebrew/bin/gh` を確認する
 - 特定リポジトリだけ 404 / 403 → アクセス権がなくなっている。HTML の「取得できなかったリポジトリ」に載るのでそのまま配信し、ユーザーに一言添える
 - 対象期間がおかしい → `~/.local/state/github-digest/state.json` の `lastRunAt` を確認する。消せば次回は直近 24 時間になる
+
+## クラウドの routine で動かす
+
+Claude Code のクラウド定期実行では環境が毎回まっさらで、`state.json` も `gh` の認証も残らない。そのための手順は [routine.md](routine.md) にある。起点は inDocs に登録済みの最新の朝刊から `scripts/last-digest.mjs` で復元し、GitHub は `GH_TOKEN`、inDocs は `INDOCS_TOKEN` と `INDOCS_URL` で認証する。
